@@ -1,5 +1,5 @@
 {
-  "name": "my-turborepo",
+  "name": "cities-states",
   "private": true,
   "scripts": {
     "build": "turbo build",
