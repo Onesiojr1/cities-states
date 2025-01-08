@@ -1,17 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
+import { City } from "../types/city";
+import { CityState } from "../types/cityStates";
 
-type City = {
-  id: string;
-  name: string;
-  stateId: string;
-};
-
-type CityState = {
-  id: string;
-  name: string;
-  acronym: string;
-};
 
 export default function Home() {
   const [cities, setCities] = useState<City[]>([]);
