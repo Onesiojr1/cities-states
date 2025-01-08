@@ -7,11 +7,11 @@ export class StateController {
   constructor(private stateService: StateService) {}
 
   @Post()
-  async createManga(@Body() dto: StateDto) {
+  async createState(@Body() dto: StateDto) {
     return await this.stateService.createState(dto);
   }
 
-  @Get('/all')
+  @Get()
   async getAllStates() {
     return await this.stateService.getAllStates();
   }
@@ -21,7 +21,7 @@ export class StateController {
     return await this.stateService.getStateById(id);
   }
 
-  @Put(':id')
+  @Put('/:id')
   async updateState(@Param('id') id: string, @Body() dto: StateDto) {
     return await this.stateService.updateState(id, dto);
   }
