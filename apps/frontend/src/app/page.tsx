@@ -1,101 +1,214 @@
-import Image from "next/image";
+"use client";
+import { useEffect, useState } from "react";
+
+type City = {
+  id: string;
+  name: string;
+  stateId: string;
+};
+
+type CityState = {
+  id: string;
+  name: string;
+  acronym: string;
+};
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [cities, setCities] = useState<City[]>([]);
+  const [CityStates, setCityStates] = useState<CityState[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentCity, setCurrentCity] = useState<
+    City | { id: null; name: string; stateId: string }
+  >({
+    id: null as string | null,
+    name: "",
+    stateId: "",
+  });
+  const [isEditing, setIsEditing] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+  useEffect(() => {
+    const fetchCitiesAndStates = async () => {
+      try {
+        const citiesResponse = await fetch("http://localhost:8000/city/");
+        const statesResponse = await fetch("http://localhost:8000/state/");
+        const citiesData = await citiesResponse.json();
+        const statesData = await statesResponse.json();
+
+        setCities(citiesData);
+        setCityStates(statesData);
+      } catch (error) {
+        console.error("Failed to fetch data", error);
+      }
+    };
+
+    fetchCitiesAndStates();
+  }, []);
+
+  const addCity = () => {
+    setCurrentCity({ id: null, name: "", stateId: "" });
+    setIsEditing(false);
+    setIsModalOpen(true);
+  };
+
+  const editCity = (city: City) => {
+    setCurrentCity(city);
+    setIsEditing(true);
+    setIsModalOpen(true);
+  };
+
+  const handleSave = async () => {
+    if (isEditing && currentCity.id !== null) {
+      await fetch(`http://localhost:8000/city/${currentCity.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(currentCity),
+      });
+    } else {
+      console.log(currentCity);
+
+      await fetch("http://localhost:8000/city/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: currentCity.name,
+          stateId: currentCity.stateId,
+        }),
+      });
+    }
+
+    const updatedCitiesResponse = await fetch("http://localhost:8000/city/");
+    const updatedCitiesData = await updatedCitiesResponse.json();
+    setCities(updatedCitiesData);
+
+    setIsModalOpen(false);
+    setCurrentCity({ id: null, name: "", stateId: "" });
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+    setCurrentCity({ id: null, name: "", stateId: "" });
+  };
+
+  const deleteCity = async (id: String) => {
+    await fetch(`http://localhost:8000/city/delete/${id}`, {
+      method: "DELETE",
+    });
+
+    const updatedCitiesResponse = await fetch("http://localhost:8000/city/");
+    const updatedCitiesData = await updatedCitiesResponse.json();
+    setCities(updatedCitiesData);
+  };
+
+  return (
+    <div className="min-h-screen bg-background-dark flex items-center justify-center">
+      <div className="bg-background-light p-6 rounded shadow-md w-1/2">
+        <table className="min-w-full border-collapse border border-gray-400">
+          <thead>
+            <tr>
+              <th className="border border-gray-300 p-2">Cidade</th>
+              <th className="border border-gray-300 p-2">Estado</th>
+              <th className="border border-gray-300 p-2">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cities.map(({ id, name, stateId }) => {
+              const stateName =
+                CityStates.find((CityState) => CityState.id === stateId)
+                  ?.acronym || "";
+              return (
+                <tr key={id}>
+                  <td className="border border-gray-300 p-2">{name}</td>
+                  <td className="border border-gray-300 p-2">{stateName}</td>
+                  <td className="border border-gray-300 p-2 text-center">
+                    <div className="flex justify-center gap-2">
+                      <button
+                        onClick={() => editCity({ id, name, stateId })}
+                        className="bg-blue-500 text-white p-1 rounded"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => deleteCity(id)}
+                        className="bg-red-500 text-white p-1 rounded"
+                      >
+                        Excluir
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <button
+          onClick={addCity}
+          className="mt-4 bg-blue-500 text-white p-2 rounded"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          Adicionar Cidade
+        </button>
+
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
+            <div className="bg-background-dark p-6 rounded shadow-md w-1/3">
+              <h2 className="text-lg font-semibold mb-4">
+                {isEditing ? "Editar Cidade" : "Adicionar Cidade"}
+              </h2>
+              <div className="mb-4">
+                <label className="block text-white">Cidade</label>
+                <input
+                  type="text"
+                  value={currentCity.name}
+                  onChange={(e) =>
+                    setCurrentCity({ ...currentCity, name: e.target.value })
+                  }
+                  className="mt-1 p-2 border rounded w-full text-black"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-white">Estado</label>
+                <select
+                  value={currentCity.stateId}
+                  onChange={(e) =>
+                    setCurrentCity({ ...currentCity, stateId: e.target.value })
+                  }
+                  className="mt-1 p-2 border rounded w-full text-black"
+                >
+                  <option className="text-black" value="">
+                    Selecione o estado
+                  </option>
+                  {CityStates.map((CityState) => (
+                    <option
+                      key={CityState.id}
+                      value={CityState.id}
+                      className="text-black"
+                    >
+                      {CityState.acronym} - {CityState.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  onClick={handleCancel}
+                  className="bg-gray-500 text-white p-2 rounded mr-2"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSave}
+                  className="bg-green-500 text-white p-2 rounded"
+                >
+                  Salvar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
