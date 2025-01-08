@@ -10,7 +10,7 @@ type CityState = {
 export default function Home() {
   const [CityStates, setCityStates] = useState<CityState[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentState, setCurrentCity] = useState<
+  const [currentState, setCurrentState] = useState<
   CityState | { id: null; name: string; acronym: string }
   >({
     id: null as string | null,
@@ -20,7 +20,7 @@ export default function Home() {
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    const fetchCitiesAndStates = async () => {
+    const fetchStates = async () => {
       try {
         const statesResponse = await fetch("http://localhost:8000/state/");
         const statesData = await statesResponse.json();
@@ -31,17 +31,17 @@ export default function Home() {
       }
     };
 
-    fetchCitiesAndStates();
+    fetchStates();
   }, []);
 
   const addCityState = () => {
-    setCurrentCity({ id: null, name: "", acronym: "" });
+    setCurrentState({ id: null, name: "", acronym: "" });
     setIsEditing(false);
     setIsModalOpen(true);
   };
 
   const editCityState = (cityState: CityState) => {
-    setCurrentCity(cityState);
+    setCurrentState(cityState);
     setIsEditing(true);
     setIsModalOpen(true);
   };
@@ -75,12 +75,12 @@ export default function Home() {
     setCityStates(updatedCitiesData);
 
     setIsModalOpen(false);
-    setCurrentCity({ id: null, name: "", acronym: "" });
+    setCurrentState({ id: null, name: "", acronym: "" });
   };
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    setCurrentCity({ id: null, name: "", acronym: "" });
+    setCurrentState({ id: null, name: "", acronym: "" });
   };
 
   const deleteCityState = async (id: String) => {
@@ -150,7 +150,7 @@ export default function Home() {
                   type="text"
                   value={currentState.name}
                   onChange={(e) =>
-                    setCurrentCity({ ...currentState, name: e.target.value })
+                    setCurrentState({ ...currentState, name: e.target.value })
                   }
                   className="mt-1 p-2 border rounded w-full text-black"
                 />
@@ -161,7 +161,7 @@ export default function Home() {
                   type="text"
                   value={currentState.acronym}
                   onChange={(e) =>
-                    setCurrentCity({ ...currentState, acronym: e.target.value })
+                    setCurrentState({ ...currentState, acronym: e.target.value })
                   }
                   className="mt-1 p-2 border rounded w-full text-black"
                 />
