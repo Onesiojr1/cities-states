@@ -25,6 +25,6 @@ model City {
   id   String @id @default(uuid())
   name String
 
-  state   State  @relation(fields: [stateId], references: [id])
+  state   State  @relation(fields: [stateId], references: [id], onDelete: Cascade)
   stateId String
 }
