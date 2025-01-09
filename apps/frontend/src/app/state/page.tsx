@@ -15,6 +15,7 @@ export default function Home() {
     acronym: "",
   });
   const [isEditing, setIsEditing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchStates = async () => {
@@ -32,37 +33,71 @@ export default function Home() {
   }, []);
 
   const addCityState = () => {
+    setErrorMessage(null);
     setCurrentState({ id: null, name: "", acronym: "" });
     setIsEditing(false);
     setIsModalOpen(true);
   };
 
   const editCityState = (cityState: CityState) => {
+    setErrorMessage(null);
     setCurrentState(cityState);
     setIsEditing(true);
     setIsModalOpen(true);
   };
 
   const handleSave = async () => {
+    setErrorMessage(null);
     if (isEditing && currentState.id !== null) {
-      await fetch(`http://localhost:8000/state/${currentState.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(currentState),
-      });
+      try {
+        const response = await fetch(
+          `http://localhost:8000/state/${currentState.id}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(currentState),
+          }
+        );
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.message || "Ocorreu um erro, tente novamente!"
+          );
+        }
+      } catch (error) {
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "Ocorreu um erro, tente novamente!"
+        );
+      }
     } else {
-      await fetch("http://localhost:8000/state/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: currentState.name,
-          acronym: currentState.acronym,
-        }),
-      });
+      try {
+        const response = await fetch("http://localhost:8000/state/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: currentState.name,
+            acronym: currentState.acronym,
+          }),
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.message || "Ocorreu um erro, tente novamente!"
+          );
+        }
+      } catch (error) {
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "Ocorreu um erro, tente novamente!"
+        );
+      }
     }
 
     const updatedCitiesResponse = await fetch("http://localhost:8000/state/");
@@ -79,17 +114,42 @@ export default function Home() {
   };
 
   const deleteCityState = async (id: String) => {
-    await fetch(`http://localhost:8000/state/delete/${id}`, {
-      method: "DELETE",
-    });
+    try {
+      const response = await fetch(`http://localhost:8000/state/delete/${id}`, {
+        method: "DELETE",
+      });
 
-    const updatedCitiesResponse = await fetch("http://localhost:8000/state/");
-    const updatedCitiesData = await updatedCitiesResponse.json();
-    setCityStates(updatedCitiesData);
+      const updatedCitiesResponse = await fetch("http://localhost:8000/state/");
+      const updatedCitiesData = await updatedCitiesResponse.json();
+      setCityStates(updatedCitiesData);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || "Ocorreu um erro, tente novamente!"
+        );
+      }
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Ocorreu um erro, tente novamente!"
+      );
+    }
   };
 
   return (
     <Main>
+      {errorMessage && (
+        <div className="bg-red-500 text-white my-2 p-2 rounded flex justify-between items-center">
+          {errorMessage}
+          <button
+            onClick={() => setErrorMessage(null)}
+            className="bg-red-500 text-white p-1 rounded"
+          >
+            X
+          </button>
+        </div>
+      )}
       <table className="min-w-full border-collapse border border-gray-400">
         <thead>
           <tr>
@@ -129,7 +189,7 @@ export default function Home() {
         onClick={addCityState}
         className="mt-4 bg-blue-500 text-white p-2 rounded"
       >
-        Adicionar Cidade
+        Adicionar Estado
       </button>
 
       {isModalOpen && (
