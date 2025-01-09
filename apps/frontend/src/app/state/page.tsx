@@ -4,7 +4,7 @@ import { CityState } from "../../types/cityStates";
 import Main from "../components/main";
 import Modal from "../components/Modal";
 
-export default function Home() {
+export default function StateHomePage() {
   const [CityStates, setCityStates] = useState<CityState[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentState, setCurrentState] = useState<
