@@ -12,6 +12,13 @@ export class StateService {
     })
   }
 
+  async verifyUniqueState(acronym: string) {
+    const state = await this.prisma.state.findUnique({
+      where: { acronym }
+    })
+    return state
+  }
+
   async getAllStates() {
     return await this.prisma.state.findMany()
   }

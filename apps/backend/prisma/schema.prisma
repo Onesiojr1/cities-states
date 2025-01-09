@@ -16,7 +16,7 @@ datasource db {
 model State {
   id      String @id @default(uuid())
   name    String
-  acronym String
+  acronym String @unique
 
   City City[]
 }

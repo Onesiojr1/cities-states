@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { StateService } from './state.service';
 import { StateDto } from './dto/state.dto';
 
@@ -8,6 +8,8 @@ export class StateController {
 
   @Post()
   async createState(@Body() dto: StateDto) {
+    const state = await this.stateService.verifyUniqueState(dto.acronym);
+    if(state) throw new BadRequestException('State acronym already exists');
     return await this.stateService.createState(dto);
   }
 
