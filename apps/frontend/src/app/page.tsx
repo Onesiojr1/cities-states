@@ -58,8 +58,6 @@ export default function Home() {
         body: JSON.stringify(currentCity),
       });
     } else {
-      console.log(currentCity);
-
       await fetch("http://localhost:8000/city/", {
         method: "POST",
         headers: {

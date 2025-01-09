@@ -10,7 +10,7 @@ export default function Modal(props: ModalProps) {
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
       <div className="bg-background-dark p-6 rounded shadow-md w-1/3">
         <h2 className="text-lg font-semibold mb-4">
-          props.title
+          {props.title}
         </h2>
         {props.children}
         <div className="flex justify-end">
