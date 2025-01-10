@@ -1,8 +1,10 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { StateService } from './state.service';
 import { StateDto } from './dto/state.dto';
+import { JwtGuard } from '../auth/guards/jwt.guard';
 
 @Controller('state')
+// @UseGuards(JwtGuard)
 export class StateController {
   constructor(private stateService: StateService) {}
 
