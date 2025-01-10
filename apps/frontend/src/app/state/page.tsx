@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { CityState } from "../../types/cityStates";
 import Main from "../components/main";
 import { StateModal } from "../components/StateModal";
+import Link from "next/link";
 
 export default function StateHomePage() {
   const [CityStates, setCityStates] = useState<CityState[]>([]);
@@ -176,6 +177,12 @@ export default function StateHomePage() {
                     >
                       Excluir
                     </button>
+                    <Link
+                      href={`/state/${id}`}
+                      className="bg-green-500 text-white p-1 rounded"
+                      >
+                        Ver cidades
+                      </Link>
                   </div>
                 </td>
               </tr>
