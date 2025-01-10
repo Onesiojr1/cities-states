@@ -2,15 +2,13 @@
 import { useEffect, useState } from "react";
 import { CityState } from "../../types/cityStates";
 import Main from "../components/main";
-import Modal from "../components/Modal";
+import { StateModal } from "../components/StateModal";
 
 export default function StateHomePage() {
   const [CityStates, setCityStates] = useState<CityState[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentState, setCurrentState] = useState<
-    CityState | { id: null; name: string; acronym: string }
-  >({
-    id: null as string | null,
+  const [currentState, setCurrentState] = useState<CityState>({
+    id: "",
     name: "",
     acronym: "",
   });
@@ -34,7 +32,7 @@ export default function StateHomePage() {
 
   const addCityState = () => {
     setErrorMessage(null);
-    setCurrentState({ id: null, name: "", acronym: "" });
+    setCurrentState({ id: "", name: "", acronym: "" });
     setIsEditing(false);
     setIsModalOpen(true);
   };
@@ -105,12 +103,12 @@ export default function StateHomePage() {
     setCityStates(updatedCitiesData);
 
     setIsModalOpen(false);
-    setCurrentState({ id: null, name: "", acronym: "" });
+    setCurrentState({ id: "", name: "", acronym: "" });
   };
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    setCurrentState({ id: null, name: "", acronym: "" });
+    setCurrentState({ id: "", name: "", acronym: "" });
   };
 
   const deleteCityState = async (id: String) => {
@@ -193,34 +191,16 @@ export default function StateHomePage() {
       </button>
 
       {isModalOpen && (
-        <Modal
+        <StateModal
           title={isEditing ? "Editar Estado" : "Adicionar Estado"}
-          onCancel={handleCancel}
-          onSave={handleSave}
-        >
-          <div className="mb-4">
-            <label className="block text-white">Nome do Estado</label>
-            <input
-              type="text"
-              value={currentState.name}
-              onChange={(e) =>
-                setCurrentState({ ...currentState, name: e.target.value })
-              }
-              className="mt-1 p-2 border rounded w-full text-black"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-white">Sigla do estado</label>
-            <input
-              type="text"
-              value={currentState.acronym}
-              onChange={(e) =>
-                setCurrentState({ ...currentState, acronym: e.target.value })
-              }
-              className="mt-1 p-2 border rounded w-full text-black"
-            />
-          </div>
-        </Modal>
+          handleCancel={handleCancel}
+          handleSave={handleSave}
+          currentState={currentState}
+          onChangeName={(e) => setCurrentState({ ...currentState, name: e })}
+          onChangeAcronym={(e) =>
+            setCurrentState({ ...currentState, acronym: e })
+          }
+        />
       )}
     </Main>
   );

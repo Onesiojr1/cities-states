@@ -2,18 +2,15 @@
 import { useEffect, useState } from "react";
 import { City } from "../../types/city";
 import { CityState } from "../../types/cityStates";
-import Modal from "../components/Modal";
 import Main from "../components/main";
-
+import { CityModal } from "../components/CityModal";
 
 export default function CityHomePage() {
   const [cities, setCities] = useState<City[]>([]);
   const [CityStates, setCityStates] = useState<CityState[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentCity, setCurrentCity] = useState<
-    City | { id: null; name: string; stateId: string }
-  >({
-    id: null as string | null,
+  const [currentCity, setCurrentCity] = useState<City>({
+    id: "",
     name: "",
     stateId: "",
   });
@@ -38,7 +35,7 @@ export default function CityHomePage() {
   }, []);
 
   const addCity = () => {
-    setCurrentCity({ id: null, name: "", stateId: "" });
+    setCurrentCity({ id: "", name: "", stateId: "" });
     setIsEditing(false);
     setIsModalOpen(true);
   };
@@ -76,12 +73,12 @@ export default function CityHomePage() {
     setCities(updatedCitiesData);
 
     setIsModalOpen(false);
-    setCurrentCity({ id: null, name: "", stateId: "" });
+    setCurrentCity({ id: "", name: "", stateId: "" });
   };
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    setCurrentCity({ id: null, name: "", stateId: "" });
+    setCurrentCity({ id: "", name: "", stateId: "" });
   };
 
   const deleteCity = async (id: String) => {
@@ -142,46 +139,19 @@ export default function CityHomePage() {
       </button>
 
       {isModalOpen && (
-        <Modal 
+        <CityModal
           title={isEditing ? "Editar Cidade" : "Adicionar Cidade"}
-          onSave={handleSave}
-          onCancel={handleCancel}
-        >
-          <div className="mb-4">
-            <label className="block text-white">Cidade</label>
-            <input
-              type="text"
-              value={currentCity.name}
-              onChange={(e) =>
-                setCurrentCity({ ...currentCity, name: e.target.value })
-              }
-              className="mt-1 p-2 border rounded w-full text-black"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-white">Estado</label>
-            <select
-              value={currentCity.stateId}
-              onChange={(e) =>
-                setCurrentCity({ ...currentCity, stateId: e.target.value })
-              }
-              className="mt-1 p-2 border rounded w-full text-black"
-            >
-              <option className="text-black" value="">
-                Selecione o estado
-              </option>
-              {CityStates.map((CityState) => (
-                <option
-                  key={CityState.id}
-                  value={CityState.id}
-                  className="text-black"
-                >
-                  {CityState.acronym} - {CityState.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </Modal>
+          currentCity={currentCity}
+          CityStates={CityStates}
+          onChangeName={(value) =>
+            setCurrentCity({ ...currentCity, name: value })
+          }
+          onChangeState={(value) =>
+            setCurrentCity({ ...currentCity, stateId: value })
+          }
+          handleCancel={handleCancel}
+          handleSave={handleSave}
+        />
       )}
     </Main>
   );
