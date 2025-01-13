@@ -3,6 +3,7 @@ import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/auth';
 import { UserService } from '../user/user.service';
+import { permission } from 'process';
 
 const EXPIRE_TIME = 3600  * 1000
 
@@ -14,9 +15,7 @@ export class AuthService {
     const user = await this.validateUser(dto)
     const payload = {
       username: user.email,
-      sub: {
-        name: user.role,
-      }
+      permissions: user.permissions
     }
 
     return {
