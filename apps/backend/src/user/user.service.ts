@@ -42,4 +42,16 @@ export class UserService {
       }
     })
   }
+
+  async changeRole(id: string, role: string) {
+    const user = await this.prisma.user.update({
+      where: {
+        id
+      },
+      data: {
+        rolesId: role
+      }
+    })
+    return {email: user.email, roleId: user.rolesId}  
+  }
 }

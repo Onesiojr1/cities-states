@@ -3,20 +3,27 @@ import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/auth';
 import { UserService } from '../user/user.service';
-import { permission } from 'process';
+import { RolesService } from '../roles/roles.service';
 
-const EXPIRE_TIME = 3600  * 1000
+const EXPIRE_TIME = 10000;
 
 @Injectable()
 export class AuthService {
-  constructor(private userService: UserService, private jwtService: JwtService) {}
+  constructor(
+    private userService: UserService,
+    private jwtService: JwtService,
+    private rolesService: RolesService,
+  ) {}
 
-  async login(dto:LoginDto) {
-    const user = await this.validateUser(dto)
+  async login(dto: LoginDto) {
+    const user = await this.validateUser(dto);
+    const { permissions } = await this.rolesService.getPermissionsByRole(
+      user.rolesId,
+    );
     const payload = {
       username: user.email,
-      permissions: user.permissions
-    }
+      permissions: permissions,
+    };
 
     return {
       user,
@@ -30,27 +37,30 @@ export class AuthService {
           secret: process.env.JWT_REFRESHTOKEN,
         }),
         expiresIn: new Date().setTime(new Date().getTime() + EXPIRE_TIME),
-      }
-    }
+      },
+    };
   }
 
-  async validateUser(dto:LoginDto) {
-    const user =await this.userService.findByEmail(dto.username);
+  async validateUser(dto: LoginDto) {
+    const user = await this.userService.findByEmail(dto.username);
 
-    if(user && (await compare(dto.password, user.password))) {
-      const  { password, ...result } = user
+    if (user && (await compare(dto.password, user.password))) {
+      const { password, ...result } = user;
 
-      return result
+      return result;
     }
 
-    throw new UnauthorizedException()
+    throw new UnauthorizedException();
   }
 
   async refreshToken(user: any) {
+    const { permissions } = await this.rolesService.getPermissionsByRole(
+      user.rolesId,
+    );
     const payload = {
       username: user.username,
-      sub: user.sub
-    }
+      permissions: permissions,
+    };
 
     return {
       accessToken: await this.jwtService.signAsync(payload, {
@@ -62,6 +72,6 @@ export class AuthService {
         secret: process.env.JWT_REFRESHTOKEN,
       }),
       expiresIn: new Date().setTime(new Date().getTime() + EXPIRE_TIME),
-    }
+    };
   }
 }

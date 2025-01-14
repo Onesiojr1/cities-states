@@ -6,8 +6,9 @@ export class CreateUserDto {
 
   @IsString()
   password: string
+}
 
-  @IsArray()
-  @IsString({ each: true })
-  permissions: string[]
+export class changeRoleDto {
+  @IsString()
+  roleId: string
 }
