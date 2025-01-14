@@ -4,8 +4,10 @@ import { CityState } from "../../types/cityStates";
 import Main from "../components/main";
 import { StateModal } from "../components/StateModal";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 export default function StateHomePage() {
+  const { data: session } = useSession();
   const [CityStates, setCityStates] = useState<CityState[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentState, setCurrentState] = useState<CityState>({
@@ -16,18 +18,31 @@ export default function StateHomePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchStates = async () => {
-      try {
-        const statesResponse = await fetch("http://localhost:8000/state/");
-        const statesData = await statesResponse.json();
+  const fetchStates = async () => {
+    try {
+      const statesResponse = await fetch("http://localhost:8000/state/", {
+        headers: {
+          authorization: `Bearer ${session?.backendTokens.accessToken}`,
+        },
+      });
+      const statesData = await statesResponse.json();
 
+      if (statesResponse.status === 401) {
+        setCityStates([]);
+        throw Error(statesData.message);
+      } else {
         setCityStates(statesData);
-      } catch (error) {
-        console.error("Failed to fetch data", error);
       }
-    };
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Ocorreu um erro, tente novamente!"
+      );
+    }
+  };
 
+  useEffect(() => {
     fetchStates();
   }, []);
 
@@ -55,6 +70,7 @@ export default function StateHomePage() {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
+              authorization: `Bearer ${session?.backendTokens.accessToken}`,
             },
             body: JSON.stringify(currentState),
           }
@@ -78,6 +94,7 @@ export default function StateHomePage() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            authorization: `Bearer ${session?.backendTokens.accessToken}`,
           },
           body: JSON.stringify({
             name: currentState.name,
@@ -99,9 +116,7 @@ export default function StateHomePage() {
       }
     }
 
-    const updatedCitiesResponse = await fetch("http://localhost:8000/state/");
-    const updatedCitiesData = await updatedCitiesResponse.json();
-    setCityStates(updatedCitiesData);
+    fetchStates();
 
     setIsModalOpen(false);
     setCurrentState({ id: "", name: "", acronym: "" });
@@ -116,11 +131,13 @@ export default function StateHomePage() {
     try {
       const response = await fetch(`http://localhost:8000/state/delete/${id}`, {
         method: "DELETE",
+        headers: {
+          authorization: `Bearer ${session?.backendTokens.accessToken}`,
+        },
       });
 
-      const updatedCitiesResponse = await fetch("http://localhost:8000/state/");
-      const updatedCitiesData = await updatedCitiesResponse.json();
-      setCityStates(updatedCitiesData);
+      fetchStates();
+      
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
@@ -180,9 +197,9 @@ export default function StateHomePage() {
                     <Link
                       href={`/state/${id}`}
                       className="bg-green-500 text-white p-1 rounded"
-                      >
-                        Ver cidades
-                      </Link>
+                    >
+                      Ver cidades
+                    </Link>
                   </div>
                 </td>
               </tr>
