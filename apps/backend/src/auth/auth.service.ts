@@ -22,6 +22,7 @@ export class AuthService {
     );
     const payload = {
       username: user.email,
+      roleId: user.rolesId,
       permissions: permissions,
     };
 
@@ -55,10 +56,11 @@ export class AuthService {
 
   async refreshToken(user: any) {
     const { permissions } = await this.rolesService.getPermissionsByRole(
-      user.rolesId,
+      user.roleId,
     );
     const payload = {
       username: user.username,
+      roleId: user.roleId,
       permissions: permissions,
     };
 
